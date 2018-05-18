@@ -1,0 +1,93 @@
+#pomodoro {
+  max-width: 300px;
+  height: 350px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  grid-column-gap: 5px;
+  grid-row-gap: 5px;
+  grid-template-areas: 
+  "break_label . session_label"
+  "break_length . session_length"
+  "adjust_break . adjust_session"
+  ". timer_label ."
+  ". timer ."
+  "start_stop . reset"; 
+}
+
+#break-label {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-area: break_label;
+}
+#session-label {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-area: session_label;
+}
+#break-length {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-area: break_length;
+}
+#session-length {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-area: session_length;
+}
+#timer-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-area: timer_label;
+}
+#time-left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-area: timer;
+}
+#start-stop {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-area: start_stop;
+  cursor: pointer;
+}
+#reset {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-area: reset;
+  cursor: pointer;
+}
+#adjust-break {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  grid-area: adjust_break
+}
+#adjust-session {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  grid-area: adjust_session
+}
+
+.adjust-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+  border: 1px solid lightcoral;
+  border-radius: 5px;
+  cursor: pointer;
+}

@@ -850,6 +850,14 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+function secondsToMinutes(secs) {
+  var mins = Math.floor(secs / 60);
+  var seconds = secs % 60;
+  return (mins < 10 ? '0' : '') + parseInt(mins, 10) + ':' + (seconds < 10 ? '0' : '') + parseInt(seconds, 10);
+}
+
+var timerID = void 0;
+
 var App = function (_Component) {
   _inherits(App, _Component);
 
@@ -859,25 +867,112 @@ var App = function (_Component) {
     var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
 
     _this.state = {
-      sessionLength: "25:00",
-      breakLength: "5:00",
-      timerLabel: "Session",
-      timeLeft: "25:00",
-      startStop: true
+      sessionLength: 60 * 25,
+      breakLength: 60 * 5,
+      timerLabel: true,
+      timeLeft: 60 * 25,
+      startStop: true,
+      initial: true,
+      audioOn: false
     };
 
-    _this.handleClick = _this.handleClick.bind(_this);
+    _this.handleReset = _this.handleReset.bind(_this);
+    _this.handleStartStop = _this.handleStartStop.bind(_this);
+    _this.handleIncrementBreak = _this.handleIncrementBreak.bind(_this);
+    _this.handleIncrementSession = _this.handleIncrementSession.bind(_this);
+    _this.handleDecrementBreak = _this.handleDecrementBreak.bind(_this);
+    _this.handleDecrementSession = _this.handleDecrementSession.bind(_this);
 
     return _this;
   }
 
   _createClass(App, [{
-    key: 'handleClick',
-    value: function handleClick(event) {}
+    key: 'handleReset',
+    value: function handleReset(event) {
+      if (timerID) {
+        clearInterval(timerID);
+      }
+      this.setState({
+        sessionLength: 60 * 25,
+        breakLength: 60 * 5,
+        timerLabel: true,
+        timeLeft: 60 * 25,
+        startStop: true,
+        initial: true,
+        audioOn: false
+      });
+    }
+  }, {
+    key: 'handleStartStop',
+    value: function handleStartStop(event) {
+      var that = this;
+      function countdown() {
+        if (this.state.timeLeft > 0) {
+          this.setState(function (state, props) {
+            return {
+              timeLeft: state.timeLeft - 60,
+              audioOn: false
+            };
+          });
+        } else {
+          clearInterval(timerID);
+          this.setState({
+            timerLabel: !this.state.timerLabel,
+            timeLeft: this.state.timerLabel ? this.state.breakLength : this.state.sessionLength,
+            audioOn: true
+          });
+          timerID = setInterval(countdown.bind(that), 1000);
+        }
+      }
+      if (this.state.startStop) {
+        this.setState({
+          startStop: false,
+          timeLeft: this.state.initial ? this.state.sessionLength : this.state.timeLeft,
+          initial: this.state.initial ? false : this.state.initial
+        });
+        if (timerID) {
+          clearInterval(timerID);
+          timerID = setInterval(countdown.bind(that), 1000);
+        } else {
+          timerID = setInterval(countdown.bind(that), 1000);
+        }
+      } else {
+        clearInterval(timerID);
+        this.setState({ startStop: true });
+      }
+    }
+  }, {
+    key: 'handleIncrementBreak',
+    value: function handleIncrementBreak(event) {
+      this.setState(function (state, props) {
+        return { breakLength: state.breakLength + 60 > 3600 ? 3600 : state.breakLength + 60 };
+      });
+    }
+  }, {
+    key: 'handleIncrementSession',
+    value: function handleIncrementSession(event) {
+      this.setState(function (state, props) {
+        return { sessionLength: state.sessionLength + 60 > 3600 ? 3600 : state.sessionLength + 60 };
+      });
+    }
+  }, {
+    key: 'handleDecrementBreak',
+    value: function handleDecrementBreak(event) {
+      this.setState(function (state, props) {
+        return { breakLength: state.breakLength - 60 < 0 ? 0 : state.breakLength - 60 };
+      });
+    }
+  }, {
+    key: 'handleDecrementSession',
+    value: function handleDecrementSession(event) {
+      this.setState(function (state, props) {
+        return { sessionLength: state.sessionLength - 60 < 0 ? 0 : state.sessionLength - 60 };
+      });
+    }
   }, {
     key: 'render',
     value: function render() {
-
+      var audio = _react2.default.createElement('audio', { id: 'beep', src: 'http://developer.mozilla.org/@api/deki/files/2926/=AudioTest_(1).ogg', autoPlay: true });
       return _react2.default.createElement(
         'div',
         null,
@@ -892,63 +987,80 @@ var App = function (_Component) {
           _react2.default.createElement(
             'div',
             { id: 'break-label' },
-            'Break Length'
+            'Break ',
+            _react2.default.createElement('br', null),
+            ' Length'
           ),
           _react2.default.createElement(
             'div',
             { id: 'session-label' },
-            'Session Length'
+            'Session ',
+            _react2.default.createElement('br', null),
+            'Length'
           ),
           _react2.default.createElement(
             'div',
             { id: 'break-length' },
-            this.state.breakLength
+            secondsToMinutes(this.state.breakLength)
           ),
           _react2.default.createElement(
             'div',
             { id: 'session-length' },
-            this.state.sessionLength
+            secondsToMinutes(this.state.sessionLength)
           ),
           _react2.default.createElement(
             'div',
-            { id: 'break-decrement' },
-            '-'
+            { id: 'adjust-break' },
+            _react2.default.createElement(
+              'div',
+              { id: 'break-decrement', className: 'adjust-button',
+                onClick: this.handleDecrementBreak },
+              '-'
+            ),
+            _react2.default.createElement(
+              'div',
+              { id: 'break-increment', className: 'adjust-button',
+                onClick: this.handleIncrementBreak },
+              '+'
+            )
           ),
           _react2.default.createElement(
             'div',
-            { id: 'session-decrement' },
-            '-'
-          ),
-          _react2.default.createElement(
-            'div',
-            { id: 'break-increment' },
-            '+'
-          ),
-          _react2.default.createElement(
-            'div',
-            { id: 'session-increment' },
-            '+'
+            { id: 'adjust-session' },
+            _react2.default.createElement(
+              'div',
+              { id: 'session-decrement', className: 'adjust-button',
+                onClick: this.handleDecrementSession },
+              '-'
+            ),
+            _react2.default.createElement(
+              'div',
+              { id: 'session-increment', className: 'adjust-button',
+                onClick: this.handleIncrementSession },
+              '+'
+            )
           ),
           _react2.default.createElement(
             'div',
             { id: 'timer-label' },
-            this.state.timerLabel
+            this.state.timerLabel && 'Session' || !this.state.timerLabel && 'Break'
           ),
           _react2.default.createElement(
             'div',
             { id: 'time-left' },
-            this.state.timeLeft
+            secondsToMinutes(this.state.timeLeft)
           ),
           _react2.default.createElement(
             'div',
-            { id: 'start-stop' },
+            { id: 'start-stop', onClick: this.handleStartStop },
             this.state.startStop ? "Start" : "Stop"
           ),
           _react2.default.createElement(
             'div',
-            { id: 'reset' },
+            { id: 'reset', onClick: this.handleReset },
             'Reset'
-          )
+          ),
+          this.state.audioOn && audio
         )
       );
     }
