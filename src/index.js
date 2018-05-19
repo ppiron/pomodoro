@@ -8,6 +8,10 @@ function secondsToMinutes (secs) {
           (seconds < 10 ? '0' : '') + parseInt(seconds, 10))
 }
 
+function minutes (secs) {
+  return Math.floor(secs / 60);
+}
+
 let timerID;
 
 class App extends Component {
@@ -20,8 +24,10 @@ class App extends Component {
       timeLeft: 60 * 25,
       startStop: true,
       initial: true,
-      audioOn: false,
+      //audioOn: false,
     };
+
+    this.audio = React.createRef();
 
     this.handleReset = this.handleReset.bind(this);
     this.handleStartStop = this.handleStartStop.bind(this);
@@ -29,6 +35,7 @@ class App extends Component {
     this.handleIncrementSession = this.handleIncrementSession.bind(this);
     this.handleDecrementBreak = this.handleDecrementBreak.bind(this);
     this.handleDecrementSession = this.handleDecrementSession.bind(this);
+    this.rewindAudio = this.rewindAudio.bind(this);
 
   }
 
@@ -36,6 +43,8 @@ class App extends Component {
     if (timerID) {
       clearInterval(timerID);
     }
+    this.audio.current.pause();
+    this.audio.current.currentTime = 0;
     this.setState (
       {
         sessionLength: 60 * 25,
@@ -44,7 +53,7 @@ class App extends Component {
         timeLeft: 60 * 25,
         startStop: true,
         initial: true,
-        audioOn: false,
+        //audioOn: false,
       }
     )
   }
@@ -56,18 +65,18 @@ class App extends Component {
         this.setState(function(state, props) {
           return (
             {
-              timeLeft: state.timeLeft - 60,
-              audioOn: false,
+              timeLeft: state.timeLeft - 1,
             }
           )
         })
       } else {
         clearInterval(timerID);
+        this.audio.current.play();
         this.setState( 
           {
             timerLabel: !this.state.timerLabel,
             timeLeft: this.state.timerLabel ? this.state.breakLength : this.state.sessionLength,
-            audioOn: true,
+            //audioOn: true,
           }
         );
         timerID = setInterval(countdown.bind(that), 1000);
@@ -112,7 +121,7 @@ class App extends Component {
   handleDecrementBreak(event) {
     this.setState (function(state, props) {
       return (
-        {breakLength: state.breakLength - 60 < 0 ? 0 : state.breakLength - 60}
+        {breakLength: state.breakLength - 60 <= 0 ? 60 : state.breakLength - 60}
       )
     })
   }
@@ -120,14 +129,19 @@ class App extends Component {
   handleDecrementSession(event) {
     this.setState (function(state, props) {
       return (
-        {sessionLength: state.sessionLength - 60 < 0 ? 0 : state.sessionLength - 60}
+        {sessionLength: state.sessionLength - 60 <= 0 ? 60 : state.sessionLength - 60}
       )
     })
   }
 
+  rewindAudio(event) {
+    this.audio.current.currentTime = 0;
+  }
+
   render() {
     const audio = 
-    <audio id="beep" src="http://developer.mozilla.org/@api/deki/files/2926/=AudioTest_(1).ogg" autoPlay={true}>
+    <audio id="beep" src="AudioTest.wav" ref={this.audio} 
+          autoPlay={false} onEnded={this.rewindAudio}>
     </audio>
     return (
       <div>
@@ -140,8 +154,8 @@ class App extends Component {
             Session <br />
             Length
           </div>
-          <div id="break-length">{secondsToMinutes(this.state.breakLength)}</div>
-          <div id="session-length">{secondsToMinutes(this.state.sessionLength)}</div>
+          <div id="break-length">{minutes(this.state.breakLength)}</div>
+          <div id="session-length">{minutes(this.state.sessionLength)}</div>
           <div id="adjust-break">
             <div id="break-decrement" className="adjust-button" 
             onClick={this.handleDecrementBreak}>-</div>
@@ -157,9 +171,9 @@ class App extends Component {
           <div id="timer-label">{this.state.timerLabel && `Session` || 
                                 !this.state.timerLabel && `Break`}</div>
           <div id="time-left">{secondsToMinutes(this.state.timeLeft)}</div>
-          <div id="start-stop" onClick={this.handleStartStop}>{this.state.startStop ? "Start" : "Stop"}</div>
+          <div id="start_stop" onClick={this.handleStartStop}>{this.state.startStop ? "Start" : "Stop"}</div>
           <div id="reset" onClick={this.handleReset}>Reset</div>
-          {this.state.audioOn && audio}
+          {audio}
         </div>        
       </div>
     );

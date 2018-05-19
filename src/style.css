@@ -54,12 +54,16 @@
   align-items: center;
   grid-area: timer;
 }
-#start-stop {
+#start_stop {
   display: flex;
   justify-content: center;
   align-items: center;
   grid-area: start_stop;
   cursor: pointer;
+  -webkit-user-select: none;  
+  -moz-user-select: none;     
+  -ms-user-select: none;      
+  user-select: none; 
 }
 #reset {
   display: flex;
@@ -67,6 +71,10 @@
   align-items: center;
   grid-area: reset;
   cursor: pointer;
+  -webkit-user-select: none;  
+  -moz-user-select: none;     
+  -ms-user-select: none;      
+  user-select: none; 
 }
 #adjust-break {
   display: flex;
@@ -90,4 +98,8 @@
   border: 1px solid lightcoral;
   border-radius: 5px;
   cursor: pointer;
+  -webkit-user-select: none;  
+  -moz-user-select: none;     
+  -ms-user-select: none;      
+  user-select: none; 
 }

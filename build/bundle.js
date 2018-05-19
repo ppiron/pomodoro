@@ -856,6 +856,10 @@ function secondsToMinutes(secs) {
   return (mins < 10 ? '0' : '') + parseInt(mins, 10) + ':' + (seconds < 10 ? '0' : '') + parseInt(seconds, 10);
 }
 
+function minutes(secs) {
+  return Math.floor(secs / 60);
+}
+
 var timerID = void 0;
 
 var App = function (_Component) {
@@ -872,9 +876,11 @@ var App = function (_Component) {
       timerLabel: true,
       timeLeft: 60 * 25,
       startStop: true,
-      initial: true,
-      audioOn: false
+      initial: true
+      //audioOn: false,
     };
+
+    _this.audio = _react2.default.createRef();
 
     _this.handleReset = _this.handleReset.bind(_this);
     _this.handleStartStop = _this.handleStartStop.bind(_this);
@@ -882,6 +888,7 @@ var App = function (_Component) {
     _this.handleIncrementSession = _this.handleIncrementSession.bind(_this);
     _this.handleDecrementBreak = _this.handleDecrementBreak.bind(_this);
     _this.handleDecrementSession = _this.handleDecrementSession.bind(_this);
+    _this.rewindAudio = _this.rewindAudio.bind(_this);
 
     return _this;
   }
@@ -892,14 +899,16 @@ var App = function (_Component) {
       if (timerID) {
         clearInterval(timerID);
       }
+      this.audio.current.pause();
+      this.audio.current.currentTime = 0;
       this.setState({
         sessionLength: 60 * 25,
         breakLength: 60 * 5,
         timerLabel: true,
         timeLeft: 60 * 25,
         startStop: true,
-        initial: true,
-        audioOn: false
+        initial: true
+        //audioOn: false,
       });
     }
   }, {
@@ -910,16 +919,16 @@ var App = function (_Component) {
         if (this.state.timeLeft > 0) {
           this.setState(function (state, props) {
             return {
-              timeLeft: state.timeLeft - 60,
-              audioOn: false
+              timeLeft: state.timeLeft - 1
             };
           });
         } else {
           clearInterval(timerID);
+          this.audio.current.play();
           this.setState({
             timerLabel: !this.state.timerLabel,
-            timeLeft: this.state.timerLabel ? this.state.breakLength : this.state.sessionLength,
-            audioOn: true
+            timeLeft: this.state.timerLabel ? this.state.breakLength : this.state.sessionLength
+            //audioOn: true,
           });
           timerID = setInterval(countdown.bind(that), 1000);
         }
@@ -959,20 +968,26 @@ var App = function (_Component) {
     key: 'handleDecrementBreak',
     value: function handleDecrementBreak(event) {
       this.setState(function (state, props) {
-        return { breakLength: state.breakLength - 60 < 0 ? 0 : state.breakLength - 60 };
+        return { breakLength: state.breakLength - 60 <= 0 ? 60 : state.breakLength - 60 };
       });
     }
   }, {
     key: 'handleDecrementSession',
     value: function handleDecrementSession(event) {
       this.setState(function (state, props) {
-        return { sessionLength: state.sessionLength - 60 < 0 ? 0 : state.sessionLength - 60 };
+        return { sessionLength: state.sessionLength - 60 <= 0 ? 60 : state.sessionLength - 60 };
       });
+    }
+  }, {
+    key: 'rewindAudio',
+    value: function rewindAudio(event) {
+      this.audio.current.currentTime = 0;
     }
   }, {
     key: 'render',
     value: function render() {
-      var audio = _react2.default.createElement('audio', { id: 'beep', src: 'http://developer.mozilla.org/@api/deki/files/2926/=AudioTest_(1).ogg', autoPlay: true });
+      var audio = _react2.default.createElement('audio', { id: 'beep', src: 'AudioTest.wav', ref: this.audio,
+        autoPlay: false, onEnded: this.rewindAudio });
       return _react2.default.createElement(
         'div',
         null,
@@ -1001,12 +1016,12 @@ var App = function (_Component) {
           _react2.default.createElement(
             'div',
             { id: 'break-length' },
-            secondsToMinutes(this.state.breakLength)
+            minutes(this.state.breakLength)
           ),
           _react2.default.createElement(
             'div',
             { id: 'session-length' },
-            secondsToMinutes(this.state.sessionLength)
+            minutes(this.state.sessionLength)
           ),
           _react2.default.createElement(
             'div',
@@ -1052,7 +1067,7 @@ var App = function (_Component) {
           ),
           _react2.default.createElement(
             'div',
-            { id: 'start-stop', onClick: this.handleStartStop },
+            { id: 'start_stop', onClick: this.handleStartStop },
             this.state.startStop ? "Start" : "Stop"
           ),
           _react2.default.createElement(
@@ -1060,7 +1075,7 @@ var App = function (_Component) {
             { id: 'reset', onClick: this.handleReset },
             'Reset'
           ),
-          this.state.audioOn && audio
+          audio
         )
       );
     }
